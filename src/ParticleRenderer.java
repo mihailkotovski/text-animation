@@ -22,9 +22,6 @@ final class ParticleRenderer {
         if (state.particlePaint == null) {
             state.particlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         }
-        if (state.particleGlowPaint == null) {
-            state.particleGlowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        }
         if (state.particleStrokePaint == null) {
             state.particleStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             state.particleStrokePaint.setStyle(Paint.Style.STROKE);

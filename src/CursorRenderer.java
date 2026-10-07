@@ -500,7 +500,6 @@ final class CursorRenderer {
     private float updateCursorBlink(AnimationState state, long now, boolean active) {
         if (!settings.cursorBlinkEnabled || active || state.cursorBlinkAnchor <= 0L || now < state.cursorBlinkAnchor) {
             state.cursorBlinkAnchor = now;
-            state.cursorBlinkAlpha = 1.0f;
             return 1.0f;
         }
         float half = settings.cursorBlinkPeriod / 2.0f;
@@ -517,7 +516,6 @@ final class CursorRenderer {
         } else {
             alpha = Easing.smoothStep((elapsed - half - hold) / Math.max(1.0f, fade));
         }
-        state.cursorBlinkAlpha = alpha;
         return alpha;
     }
 

@@ -35,7 +35,6 @@ public class AnimationState {
     public float cursorY = -1.0f;
     public float cursorMotion = 0.0f;
     public long cursorBlinkAnchor = 0L;
-    public float cursorBlinkAlpha = 1.0f;
     public float spaceJumpX = -1.0f;
     public float spaceJumpY = -1.0f;
     public long spaceJumpStartTime = 0L;
@@ -60,7 +59,6 @@ public class AnimationState {
     public long lastParticleUpdateTime = 0L;
     public long lastTypeTime = 0L;
     public int combo = 0;
-    public long comboFlashTime = 0L;
     public long shakeStartTime = 0L;
     public float shakeAmp = 0.0f;
     public int shakeSaveCount = -1;
@@ -71,19 +69,15 @@ public class AnimationState {
     public WeakReference<ViewGroup> overlayHost;
     public Drawable overlayDrawable;
     public long lastWordTriggerTime = 0L;
-    public int lastWordTriggerOffset = -1;
     public Paint cursorPaint;
     public Paint particlePaint;
-    public Paint particleGlowPaint;
     public Paint particleStrokePaint;
     public Paint particleTextPaint;
-    public Paint selectionPaint;
     public Paint sharedPaint;
     public Paint comboPaint;
     public Path glyphPath;
     public Path particlePath;
     public PathMeasure pathMeasure;
     public RectF cursorRect;
-    public RectF selectionRect;
     public Map<Integer, Object> hiddenSpans;
 }

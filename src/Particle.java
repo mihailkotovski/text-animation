@@ -84,14 +84,6 @@ public class Particle {
         configure(textSize, Math.max(0.1f, speed), Math.max(0.1f, sizeMultiplier), Math.max(0.0f, spread));
     }
 
-    public Particle(float x, float y, int color, float textSize, float speed, float sizeMultiplier, int style, String text) {
-        this(x, y, color, textSize, speed, sizeMultiplier, style, text, 1.0f);
-    }
-
-    public Particle(float x, float y, int color, float textSize, float speed, float sizeMultiplier) {
-        this(x, y, color, textSize, speed, sizeMultiplier, STYLE_DOTS, null, 1.0f);
-    }
-
     private float rand(float min, float max) {
         return min + RANDOM.nextFloat() * (max - min);
     }
@@ -266,10 +258,6 @@ public class Particle {
             return Math.min(1.0f, lifeValue / 0.2f);
         }
         return lifeValue * lifeValue * (3.0f - 2.0f * lifeValue);
-    }
-
-    public boolean update(long dt) {
-        return update(dt, 0.0f, 1.0f);
     }
 
     public boolean update(long dt, float gravityX, float gravityY) {

@@ -35,7 +35,6 @@ final class PowerMode {
             state.combo = 1;
         }
         state.lastTypeTime = now;
-        state.comboFlashTime = now;
         if (state.combo > 0 && state.combo % POWER_MILESTONE == 0) {
             triggerShake(view, state, now, 1.0f);
             helper.haptic(view, true);

@@ -220,7 +220,6 @@ public class TextAnimationCore {
                             state.cursorX = -1.0f;
                             state.cursorY = -1.0f;
                             state.cursorBlinkAnchor = 0L;
-                            state.cursorBlinkAlpha = 1.0f;
                             cursor.resetCursorEffects(state);
                         }
                         view.invalidate();
@@ -555,7 +554,6 @@ public class TextAnimationCore {
                     continue;
                 }
                 state.lastWordTriggerTime = now;
-                state.lastWordTriggerOffset = wordStart;
                 int perChar = Math.max(1, Math.min(4, 16 / Math.max(1, word.length())));
                 for (int offset = wordStart; offset < safeEnd; offset++) {
                     spawner.spawnStyledParticles(view, state, offset, String.valueOf(curText.charAt(offset)), perChar, WORD_TRIGGER_STYLES[i], 1.0f);
