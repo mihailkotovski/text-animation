@@ -1,0 +1,4 @@
+libs/
+*.dex
+backup_*/
+__pycache__/
