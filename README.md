@@ -2,7 +2,7 @@
 
 Плагин для [exteraGram](https://exteragram.app), который оживляет набор текста: буквы мягко появляются, курсор плывёт, а стёртые символы рассыпаются на частицы.
 
-**Версия 11.0** · exteraGram `>= 12.5.1` · Plugin SDK `>= 1.4.4.2` · авторы @mihailkotovski и @mishabotov
+**Версия 11.0** · exteraGram `>= 12.5.1` · Plugin SDK `>= 1.4.4.2` · авторы @itskotovski и @mishabotov
 
 ## Установка
 

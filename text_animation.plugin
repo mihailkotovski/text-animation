@@ -1,7 +1,7 @@
 __id__ = "text_animation"
 __name__ = "Text Animation"
 __description__ = "оживляет набор текста: буквы мягко появляются, курсор плывёт, а стёртые символы красиво рассыпаются"
-__author__ = "@mihailkotovski & @mishabotov"
+__author__ = "@itskotovski & @mishabotov"
 __version__ = "11.0"
 __icon__ = "DateRegBot_by_MoiStikiBot/18"
 __app_version__ = ">=12.5.1"
