@@ -95,3 +95,7 @@ python build.py
 ```
 
 Скрипт компилирует `src/*.java`, собирает `text_animation.dex`, встраивает его в `text_animation.plugin` и обновляет там SHA-256.
+
+## Лицензия
+
+[MIT](LICENSE)
