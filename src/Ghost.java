@@ -1,17 +1,20 @@
 package com.textanimation;
 
-final class GhostGlyph {
+final class Ghost {
+    final int offset;
     final String text;
     final float x;
     final float baseline;
     final float width;
-    final long startTime;
+    final boolean emoji;
+    long time;
 
-    GhostGlyph(String text, float x, float baseline, float width, long startTime) {
+    Ghost(int offset, String text, float x, float baseline, float width, boolean emoji) {
+        this.offset = offset;
         this.text = text;
         this.x = x;
         this.baseline = baseline;
         this.width = width;
-        this.startTime = startTime;
+        this.emoji = emoji;
     }
 }

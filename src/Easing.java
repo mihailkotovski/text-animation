@@ -1,63 +1,65 @@
 package com.textanimation;
 
 final class Easing {
+    static final int COUNT = 6;
+
+    private static final int LINEAR = 1;
+    private static final int CUBIC = 2;
+    private static final int BACK = 3;
+    private static final int ELASTIC = 4;
+    private static final int BOUNCE = 5;
+
     private Easing() {
     }
 
-    static float applyEasing(int curve, float t) {
-        t = Math.max(0.0f, Math.min(1.0f, t));
+    static float apply(int curve, float t) {
+        t = Motion.clamp(t);
         switch (curve) {
-            case 1:
+            case LINEAR:
                 return t;
-            case 2: {
+            case CUBIC: {
                 float inv = 1.0f - t;
                 return 1.0f - inv * inv * inv;
             }
-            case 3: {
+            case BACK: {
                 float c1 = 1.70158f;
-                float c3 = c1 + 1.0f;
                 float inv = t - 1.0f;
-                return 1.0f + c3 * inv * inv * inv + c1 * inv * inv;
+                return 1.0f + (c1 + 1.0f) * inv * inv * inv + c1 * inv * inv;
             }
-            case 4: {
+            case ELASTIC:
                 if (t <= 0.0f || t >= 1.0f) {
                     return t;
                 }
-                double c4 = (2.0 * Math.PI) / 3.0;
-                return (float) (Math.pow(2.0, -10.0 * t) * Math.sin((t * 10.0 - 0.75) * c4) + 1.0);
+                return (float) (Math.pow(2.0, -10.0 * t) * Math.sin((t * 10.0 - 0.75) * (2.0 * Math.PI / 3.0)) + 1.0);
+            case BOUNCE:
+                return bounce(t);
+            default: {
+                float inv = 1.0f - t;
+                return 1.0f - inv * inv * inv * inv * inv;
             }
-            case 5:
-                return bounceOut(t);
-            default:
-                return easeOutQuint(t);
         }
     }
 
-    private static float bounceOut(float t) {
-        float n1 = 7.5625f;
-        float d1 = 2.75f;
-        if (t < 1.0f / d1) {
-            return n1 * t * t;
-        }
-        if (t < 2.0f / d1) {
-            float shifted = t - 1.5f / d1;
-            return n1 * shifted * shifted + 0.75f;
-        }
-        if (t < 2.5f / d1) {
-            float shifted = t - 2.25f / d1;
-            return n1 * shifted * shifted + 0.9375f;
-        }
-        float shifted = t - 2.625f / d1;
-        return n1 * shifted * shifted + 0.984375f;
-    }
-
-    static float smoothStep(float t) {
-        t = Math.max(0.0f, Math.min(1.0f, t));
+    static float smooth(float t) {
+        t = Motion.clamp(t);
         return t * t * (3.0f - 2.0f * t);
     }
 
-    private static float easeOutQuint(float t) {
-        float inv = 1.0f - Math.max(0.0f, Math.min(1.0f, t));
-        return 1.0f - inv * inv * inv * inv * inv;
+    private static float bounce(float t) {
+        float n = 7.5625f;
+        float d = 2.75f;
+        if (t < 1.0f / d) {
+            return n * t * t;
+        }
+        if (t < 2.0f / d) {
+            t -= 1.5f / d;
+            return n * t * t + 0.75f;
+        }
+        if (t < 2.5f / d) {
+            t -= 2.25f / d;
+            return n * t * t + 0.9375f;
+        }
+        t -= 2.625f / d;
+        return n * t * t + 0.984375f;
     }
 }

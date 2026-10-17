@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-SOURCES = ROOT / "src" if (ROOT / "src").is_dir() else ROOT
+SOURCES = ROOT / "src"
 LIBS = ROOT / "libs" if (ROOT / "libs").is_dir() else ROOT.parent / "libs"
 ANDROID_JAR = LIBS / "android-35.jar"
 HOOK_JAR = LIBS / "hook.jar"
@@ -16,7 +16,8 @@ D8_JAR = LIBS / "build-tools" / "lib" / "d8.jar"
 DEXDUMP = LIBS / "build-tools" / "dexdump.exe"
 DEX = ROOT / "text_animation.dex"
 PLUGIN = ROOT / "text_animation.plugin"
-DEX_CLASS = "com.textanimation.TextAnimationCore"
+ENTRY = "Lcom/textanimation/TextAnimationCore;"
+BRIDGE = ("startBridge", "updateSettingsBridge", "onUnloadBridge", "BRIDGE_API", "VERSION_CODE")
 
 
 def run(*args) -> str:
@@ -26,57 +27,51 @@ def run(*args) -> str:
     return result.stdout + result.stderr
 
 
-def main() -> None:
+def compile_dex(temp: Path) -> bytes:
     sources = sorted(SOURCES.glob("*.java"))
-    for required in (ANDROID_JAR, HOOK_JAR, D8_JAR, PLUGIN, *sources):
+    if not sources:
+        sys.exit(f"No Java sources in {SOURCES}")
+    classes = temp / "classes"
+    output = temp / "dex"
+    classes.mkdir()
+    output.mkdir()
+    android_jar = shutil.copy(ANDROID_JAR, temp / "android.jar")
+    hook_jar = shutil.copy(HOOK_JAR, temp / "hook.jar")
+    separator = ";" if sys.platform == "win32" else ":"
+    print(run(
+        "javac", "-encoding", "UTF-8", "-source", "11", "-target", "11", "-Xlint:all,-options,-processing",
+        "-cp", f"{android_jar}{separator}{hook_jar}", "-d", classes, *sources,
+    ).strip())
+    class_files = sorted(classes.rglob("*.class"))
+    run("java", "-cp", D8_JAR, "com.android.tools.r8.D8", "--release", "--min-api", "21",
+        "--lib", android_jar, "--classpath", hook_jar, "--output", output, *class_files)
+    payload = (output / "classes.dex").read_bytes()
+    if payload[:4] != b"dex\n":
+        sys.exit("Invalid DEX magic")
+    if DEXDUMP.is_file():
+        dump = run(DEXDUMP, "-f", output / "classes.dex")
+        missing = [name for name in (ENTRY, *BRIDGE) if name not in dump]
+        if missing:
+            sys.exit(f"DEX is missing: {', '.join(missing)}")
+    return payload
+
+
+def main() -> None:
+    for required in (ANDROID_JAR, HOOK_JAR, D8_JAR, PLUGIN):
         if not required.is_file():
             sys.exit(f"Required file is missing: {required}")
-    if not sources:
-        sys.exit("No Java sources found")
-
     with tempfile.TemporaryDirectory(prefix="text_animation_") as temp:
-        temp = Path(temp)
-        classes = temp / "classes"
-        dex_out = temp / "dex"
-        classes.mkdir()
-        dex_out.mkdir()
-        android_jar = shutil.copy(ANDROID_JAR, temp / "android.jar")
-        hook_jar = shutil.copy(HOOK_JAR, temp / "hook.jar")
-
-        print(run(
-            "javac", "-encoding", "UTF-8", "-source", "11", "-target", "11", "-Xlint:-options",
-            "-cp", f"{android_jar};{hook_jar}" if sys.platform == "win32" else f"{android_jar}:{hook_jar}",
-            "-d", classes, *sources,
-        ).strip())
-        class_files = sorted(classes.rglob("*.class"))
-        if not class_files:
-            sys.exit("javac produced no class files")
-
-        run("java", "-cp", D8_JAR, "com.android.tools.r8.D8",
-            "--lib", android_jar, "--classpath", hook_jar, "--output", dex_out, *class_files)
-        dex_bytes = (dex_out / "classes.dex").read_bytes()
-
-        if dex_bytes[:4] != b"dex\n":
-            sys.exit("Invalid DEX magic")
-        if DEXDUMP.is_file():
-            dump = run(DEXDUMP, "-f", dex_out / "classes.dex")
-            descriptor = "L" + DEX_CLASS.replace(".", "/") + ";"
-            if descriptor not in dump:
-                sys.exit(f"{DEX_CLASS} is missing from the DEX")
-
-    digest = hashlib.sha256(dex_bytes).hexdigest()
-    DEX.write_bytes(dex_bytes)
-
+        payload = compile_dex(Path(temp))
+    digest = hashlib.sha256(payload).hexdigest()
+    DEX.write_bytes(payload)
     source = PLUGIN.read_text(encoding="utf-8")
-    source, sha_count = re.subn(r'(?m)^DEX_SHA256 = "[0-9a-f]*"$', f'DEX_SHA256 = "{digest}"', source)
-    encoded = base64.b64encode(dex_bytes).decode("ascii")
-    source, dex_count = re.subn(r'(?m)^dex_string = "[A-Za-z0-9+/=]*"$', f'dex_string = "{encoded}"', source)
-    if sha_count != 1 or dex_count != 1:
-        sys.exit("text_animation.plugin: DEX_SHA256 or dex_string line not found")
+    source, hashes = re.subn(r'(?m)^DEX_SHA256 = "[0-9a-f]*"$', f'DEX_SHA256 = "{digest}"', source)
+    encoded = base64.b64encode(payload).decode("ascii")
+    source, bodies = re.subn(r'(?m)^DEX_BASE64 = "[A-Za-z0-9+/=]*"$', f'DEX_BASE64 = "{encoded}"', source)
+    if hashes != 1 or bodies != 1:
+        sys.exit("text_animation.plugin: DEX_SHA256 or DEX_BASE64 line not found")
     PLUGIN.write_text(source, encoding="utf-8", newline="\n")
-
-    print(f"Built {DEX.name}: {len(dex_bytes)} bytes, {len(class_files)} classes")
-    print(f"SHA-256: {digest}")
+    print(f"Built {DEX.name}: {len(payload)} bytes, SHA-256 {digest}")
 
 
 if __name__ == "__main__":
